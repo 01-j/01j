@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>01.J Calculator</title>
+    <!-- Google Font similar to VCR OSD Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            /* Uses VCR OSD Mono if installed, otherwise falls back to VT323 */
+            font-family: 'VCR OSD Mono', 'VT323', monospace;
+            background-color: #131722;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-size: 18px;
+        }
+        .calculator-card {
+            background-color: #1e222d;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            width: 100%;
+            max-width: 900px;
+            border-top: 4px solid #2962ff;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+        }
+
+        /* --- Input Panel --- */
+        .input-panel {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        /* --- FIRE TITLE STYLES --- */
+        h2 {
+            text-align: left;
+            margin-bottom: 25px;
+            font-size: 3em; /* Large size for impact */
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            
+            /* Gradient Text (Yellow -> Orange -> Red) */
+            background: linear-gradient(to top, #ff0000, #ff7700, #ffff00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: #fff; /* Fallback */
+            
+            /* Glow Effect */
+            filter: drop-shadow(0 0 15px rgba(255, 69, 0, 0.6));
+            
+            /* Flicker Animation */
+            animation: fireFlicker 0.1s infinite alternate;
+        }
+
+        @keyframes fireFlicker {
+            0% { filter: drop-shadow(0 0 15px rgba(255, 69, 0, 0.6)); }
+            100% { filter: drop-shadow(0 0 25px rgba(255, 0, 0, 0.9)); }
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: #787b86;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        input[type=number] {
+            width: 100%;
+            padding: 12px;
+            background-color: #2a2e39;
+            border: 1px solid #363a45;
+            color: #fff;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1.2em;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        input:focus {
+            outline: none;
+            border-color: #2962ff;
+        }
+        
+        /* Remove number input arrows */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* --- Direction Buttons --- */
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+        .toggle-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: 2px solid;
+            background-color: transparent;
+            font-family: inherit;
+            text-transform: uppercase;
+        }
+        
+        /* Long Button Styles */
+        .toggle-btn.long {
+            color: #4caf50;
+            border-color: #4caf50;
+            background-color: rgba(76, 175, 80, 0.05);
+        }
+        .toggle-btn.long:hover {
+            background-color: rgba(76, 175, 80, 0.15);
+        }
+        .toggle-btn.long.active {
+            background-color: rgba(76, 175, 80, 0.25);
+            color: #fff;
+            text-shadow: 0 0 5px #4caf50;
+        }
+
+        /* Short Button Styles */
+        .toggle-btn.short {
+            color: #ff5252;
+            border-color: #ff5252;
+            background-color: rgba(255, 82, 82, 0.05);
+        }
+        .toggle-btn.short:hover {
+            background-color: rgba(255, 82, 82, 0.15);
+        }
+        .toggle-btn.short.active {
+            background-color: rgba(255, 82, 82, 0.25);
+            color: #fff;
+            text-shadow: 0 0 5px #ff5252;
+        }
+
+        /* --- Result Panel --- */
+        .result-panel {
+            flex: 1;
+            min-width: 300px;
+            background-color: #2a2e39;
+            padding: 25px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-self: stretch;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            border-bottom: 1px solid #363a45;
+            padding-bottom: 10px;
+        }
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .result-label {
+            color: #787b86;
+            font-size: 0.9em;
+        }
+        .result-value {
+            font-weight: 600;
+            color: #fff;
+            font-size: 1.1em;
+            text-shadow: 0 0 2px rgba(255,255,255,0.2);
+        }
+        .warning {
+            color: #ff9800;
+            font-size: 0.9em;
+            margin-top: 15px;
+            text-align: center;
+            display: none;
+            font-weight: bold;
+            border-top: 1px solid #444;
+            padding-top: 10px;
+        }
+
+        /* Highlight class for TP & SL % (Blue) */
+        .highlight-value {
+            color: #2962ff;
+        }
+
+        /* Profit class (Green) */
+        .profit-value {
+            color: #4caf50;
+            text-shadow: 0 0 5px rgba(76, 175, 80, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .calculator-card {
+                flex-direction: column;
+                padding: 20px;
+                gap: 20px;
+            }
+            .result-panel {
+                min-width: 100%;
+            }
+            h2 {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator-card">
+    
+    <!-- LEFT SIDE: INPUTS -->
+    <div class="input-panel">
+        <!-- CHANGED TITLE TO 01.J -->
+        <h2>01.J</h2>
+        
+        <div class="input-group">
+            <label for="balance">Account Balance</label>
+            <input type="number" id="balance" placeholder="e.g. 1000" value="1000" step="any">
+        </div>
+
+        <div class="input-group">
+            <label for="risk">Risk Per Trade (%)</label>
+            <input type="number" id="risk" placeholder="e.g. 1" value="1" step="0.1">
+        </div>
+
+        <div class="input-group">
+            <label for="entry">Entry Price</label>
+            <input type="number" id="entry" placeholder="e.g. 25000" value="25000" step="any">
+        </div>
+
+        <div class="input-group">
+            <label for="stoploss">Stop Loss Price</label>
+            <input type="number" id="stoploss" placeholder="e.g. 24000" value="24000" step="any">
+        </div>
+
+        <div class="input-group">
+            <label for="leverage">Leverage (x)</label>
+            <input type="number" id="leverage" placeholder="e.g. 10" value="10" step="1">
+        </div>
+
+        <div class="input-group">
+            <label>Direction</label>
+            <div class="btn-group">
+                <button type="button" id="btn-long" class="toggle-btn long active">Long</button>
+                <button type="button" id="btn-short" class="toggle-btn short">Short</button>
+            </div>
+            <input type="hidden" id="direction" value="long">
+        </div>
+    </div>
+
+    <!-- RIGHT SIDE: RESULTS -->
+    <div class="result-panel">
+
+        <div class="result-item">
+            <span class="result-label">Position Size (Units)</span>
+            <span class="result-value" id="posSize">0.0000</span>
+        </div>
+        
+        <div class="result-item">
+            <span class="result-label">Position Value (USDT)</span>
+            <span class="result-value" id="posValue">$0.00</span>
+        </div>
+        
+        <div class="result-item">
+            <span class="result-label">Required Margin</span>
+            <span class="result-value" id="margin">$0.00</span>
+        </div>
+        
+        <div class="result-item">
+            <span class="result-label">Est. Liquidation</span>
+            <span class="result-value" id="liqPrice">0.0000</span>
+        </div>
+        
+        <div class="result-item">
+            <span class="result-label">Risk Amount ($)</span>
+            <span class="result-value" id="riskAmt">$0.00</span>
+        </div>
+
+        <!-- Take Profit Price -->
+        <div class="result-item">
+            <span class="result-label">Take Profit (1:2 RR)</span>
+            <span class="result-value highlight-value" id="tpPrice">0.0000</span>
+        </div>
+        
+        <div class="result-item">
+            <span class="result-label">SL Distance (%)</span>
+            <span class="result-value highlight-value" id="slPercent">0.00%</span>
+        </div>
+
+        <!-- Profit Amount (Green) -->
+        <div class="result-item">
+            <span class="result-label">Est. Profit Amount</span>
+            <span class="result-value profit-value" id="profitAmt">$0.00</span>
+        </div>
+        
+        <div id="warning" class="warning">
+            Warning: Margin exceeds Balance!
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Select inputs
+    const inputs = document.querySelectorAll('input[type=number]');
+    
+    // Add event listeners for number inputs
+    inputs.forEach(input => {
+        input.addEventListener('input', calculate);
+    });
+
+    // Logic for Direction Toggle Buttons
+    const btnLong = document.getElementById('btn-long');
+    const btnShort = document.getElementById('btn-short');
+    const directionInput = document.getElementById('direction');
+
+    function setDirection(dir) {
+        directionInput.value = dir;
+        
+        if (dir === 'long') {
+            btnLong.classList.add('active');
+            btnShort.classList.remove('active');
+        } else {
+            btnShort.classList.add('active');
+            btnLong.classList.remove('active');
+        }
+        
+        calculate();
+    }
+
+    btnLong.addEventListener('click', () => setDirection('long'));
+    btnShort.addEventListener('click', () => setDirection('short'));
+
+    // Initial Calculation
+    window.addEventListener('load', calculate);
+
+    function calculate() {
+        // Get Input Values
+        const balance = parseFloat(document.getElementById('balance').value);
+        const riskPercent = parseFloat(document.getElementById('risk').value);
+        const entry = parseFloat(document.getElementById('entry').value);
+        const stoploss = parseFloat(document.getElementById('stoploss').value);
+        const leverage = parseFloat(document.getElementById('leverage').value);
+        const direction = directionInput.value;
+
+        if (isNaN(balance) || isNaN(riskPercent) || isNaN(entry) || isNaN(stoploss) || isNaN(leverage)) {
+            return; 
+        }
+
+        // Calculations
+        const riskAmount = balance * (riskPercent / 100);
+        let slDistancePercent;
+        let slDistancePoints;
+        let validSL = true;
+
+        if (direction === 'long') {
+            slDistancePoints = entry - stoploss;
+            slDistancePercent = (slDistancePoints / entry) * 100;
+            if (stoploss >= entry) validSL = false;
+        } else {
+            slDistancePoints = stoploss - entry;
+            slDistancePercent = (slDistancePoints / entry) * 100;
+            if (stoploss <= entry) validSL = false;
+        }
+
+        if (!validSL || slDistancePercent <= 0) {
+             document.getElementById('posSize').innerText = "Invalid";
+             document.getElementById('posValue').innerText = "$0.00";
+             document.getElementById('margin').innerText = "$0.00";
+             document.getElementById('riskAmt').innerText = "$0.00";
+             document.getElementById('liqPrice').innerText = "Invalid";
+             document.getElementById('slPercent').innerText = "Invalid";
+             document.getElementById('tpPrice').innerText = "Invalid";
+             document.getElementById('profitAmt').innerText = "$0.00";
+             document.getElementById('warning').style.display = 'none';
+             return;
+        }
+
+        const positionValue = riskAmount / (slDistancePercent / 100);
+        const positionUnits = positionValue / entry;
+        const requiredMargin = positionValue / leverage;
+
+        // Liquidation Calculation
+        let liqPrice;
+        if (direction === 'long') {
+            liqPrice = entry * (1 - (1 / leverage));
+            liqPrice = liqPrice * 1.001; 
+        } else {
+            liqPrice = entry * (1 + (1 / leverage));
+            liqPrice = liqPrice * 0.999;
+        }
+
+        // Take Profit Calculation (1:2 RR)
+        const tpDistance = slDistancePoints * 2;
+        let tpPrice;
+        if (direction === 'long') {
+            tpPrice = entry + tpDistance;
+        } else {
+            tpPrice = entry - tpDistance;
+        }
+
+        // Profit Amount Calculation (Risk Amount * 2)
+        const profitAmount = riskAmount * 2;
+
+        // Display Results
+        
+        // Units (4 decimals)
+        document.getElementById('posSize').innerText = positionUnits.toFixed(4);
+        
+        // Money Outputs ($ + 2 decimals)
+        document.getElementById('posValue').innerText = "$" + positionValue.toFixed(2);
+        document.getElementById('margin').innerText = "$" + requiredMargin.toFixed(2);
+        document.getElementById('riskAmt').innerText = "$" + riskAmount.toFixed(2);
+        document.getElementById('profitAmt').innerText = "$" + profitAmount.toFixed(2);
+        
+        // Prices (4 decimals)
+        document.getElementById('liqPrice').innerText = liqPrice.toFixed(4);
+        document.getElementById('tpPrice').innerText = tpPrice.toFixed(4);
+        
+        // Percentage
+        document.getElementById('slPercent').innerText = slDistancePercent.toFixed(2) + "%";
+
+        // Warning Logic
+        const warningBox = document.getElementById('warning');
+        if (requiredMargin > balance) {
+            warningBox.style.display = 'block';
+            document.getElementById('margin').style.color = "#ff4444";
+        } else {
+            warningBox.style.display = 'none';
+            document.getElementById('margin').style.color = "#fff";
+        }
+    }
+</script>
+
+</body>
+</html>
